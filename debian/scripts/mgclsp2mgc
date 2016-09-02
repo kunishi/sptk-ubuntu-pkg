@@ -1,0 +1,97 @@
+#!/bin/sh
+
+cmnd=$0;
+SPTK_PATH=/usr/lib/sptk/bin
+PATH="$SPTK_PATH":"$PATH"
+
+set -e;
+
+usage()
+{
+    cat<<EOF
+
+$cmnd - mgc-lsp to mgc
+
+  usage:
+       $cmnd [ option ] [ infile ] > stdout
+  option:
+       -m m          : order of mel-generalized cepstrum      [25]
+       -a a          : alpha of mel-generalized cepstrum      [0.35]
+       -g g          : gamma of mel-generalized cepstrum      [-1]
+              -c c          : gamma of mel-generalized cepstrum = -1 / (int) c (input) 
+       -i i          : input format                          [0]
+                       0 (normalized frequency [0...pi])
+                       1 (normalized frequency [0...0.5])
+                       2 (frequency [kHz])
+                       3 (frequency [Hz])
+       -s s          : sampling frequency                     [10kHz]
+       -l            : output log gain rater than linear gain [FALSE]
+       -h            : print this message
+  infile(s):
+       mgc-lsp (float)
+  output:
+       mel-grneralized cepstrum (float)                       [stdin]
+
+ Replacement of the SPTK mgclsp2mgc command
+
+EOF
+}
+
+a=0.35
+g=-1
+m=25
+lg=" "
+in=0
+s=10
+c=""
+# Parse options
+while getopts a:c:g:m:li:s:h OPT; do
+    case "$OPT" in
+	a)
+	    a="$OPTARG"
+	    ;;
+	c)
+	    c="$OPTARG"
+	    ;;
+	g)
+	    g="$OPTARG"
+	    ;;
+	m)
+	    m="$OPTARG"
+	    ;;
+	l)
+	    lg="-l"
+	    ;;
+	i)
+	    in="$OPTARG"
+	    ;;
+	s)
+	    s="$OPTARG"
+	    ;;
+
+        h)
+            usage >&2;
+            exit 0;
+            ;;
+    esac
+done
+shift $(($OPTIND - 1))
+
+file="$1"
+
+if [ ! -f "$file" ]
+then
+    echo "$cmnd: Cannot open file $file!" >&2;
+    usage >&2;
+    exit 0;
+fi
+
+
+if test x"$c" != x""
+then
+        lsp2lpc -m $m -s $s -i $in $lg $file |\
+        mgc2mgc -m $m -M $m -a $a -A $a -c $c -C $c -n -u
+else
+        lsp2lpc -m $m -s $s -i $in $lg $file |\
+        mgc2mgc -m $m -M $m -a $a -A $a -g $g -G $g -n -u
+fi

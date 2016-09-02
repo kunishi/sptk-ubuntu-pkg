@@ -1,0 +1,103 @@
+#!/bin/sh
+
+cmnd=$0;
+SPTK_PATH=/usr/lib/sptk/bin
+PATH="$SPTK_PATH":"$PATH"
+
+set -e;
+
+usage()
+{
+    cat<<EOF
+
+ $cmnd - mgc to mgc-lsp
+
+  usage:
+       $cmnd [ option ] [ infile ] > stdout
+  option:
+       -m m          : order of mel-generalized cepstrum      [25]
+       -a a          : alpha of mel-generalized cepstrum      [0.35]
+       -g g          : gamma of mel-generalized cepstrum      [-1]
+       -c c          : gamma of mel-generalized cepstrum = -1 / (int) c (input) 
+       -o o          : output format                          [0]
+                       0 (normalized frequency [0...pi])
+                       1 (normalized frequency [0...0.5])
+                       2 (frequency [kHz])
+                       3 (frequency [Hz])
+       -s s          : sampling frequency                     [10kHz]
+       -k            : do not output gain                     [FALSE]
+       -l            : output log gain rater than linear gain [FALSE]
+       -h            : print this message
+  infile(s):
+       mel-grneralized cepstrum (float)                       [stdin]
+  output:
+       mgc-lsp (float)
+
+ Replacement of the SPTK mgc2mgclsp command
+
+EOF
+}
+
+
+a=0.35
+g=-1
+k=" "
+m=25
+lg=" "
+o=0
+s=10
+c=""
+# Parse options
+while getopts a:c:g:km:lo:s:h OPT; do
+    case "$OPT" in
+	a)
+	    a="$OPTARG"
+	    ;;
+	c)
+	    c="$OPTARG"
+	    ;;
+	g)
+	    g="$OPTARG"
+	    ;;
+	k)
+	    k="-k"
+	    ;;
+	m)
+	    m="$OPTARG"
+	    ;;
+	l)
+	    lg="-l"
+	    ;;
+	o)
+	    o="$OPTARG"
+	    ;;
+	s)
+	    s="$OPTARG"
+	    ;;
+
+        h)
+            usage >&2;
+            exit 0;
+            ;;
+    esac
+done
+shift $(($OPTIND - 1))
+
+file="$1"
+
+if [ ! -f "$file" ]
+then
+    echo "$cmnd: Cannot open file $file!" >&2;
+    usage >&2;
+    exit 0;
+fi
+
+
+if test x"$c" != x""
+then
+        mgc2mgc -m $m -M $m -a $a -A $a -c $c -C $c -N -U $file |\
+        lpc2lsp -m $m -s $s -o $o $k $lg 
+else
+        mgc2mgc -m $m -M $m -a $a -A $a -g $g -G $g -N -U $file |\
+        lpc2lsp -m $m -s $s -o $o $k $lg 
+fi

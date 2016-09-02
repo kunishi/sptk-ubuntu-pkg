@@ -1,0 +1,48 @@
+#!/bin/sh
+
+cmnd=$0;
+n=1;
+
+usage()
+{
+    cat<<EOF
+
+ $cmnd - bell
+
+  usage:
+       $cmnd [ option ] [ num ]
+  option:
+       -h  : print this message
+  notice:
+       num : number of bell      [1]
+
+ Replacement of the SPTK bell command
+
+EOF
+}
+
+# Parse options
+while getopts h OPT; do
+    case "$OPT" in
+        h)
+            usage >&2;
+            exit 0;
+            ;;
+    esac
+done
+
+# Remove the switches we parsed above.
+shift `expr $OPTIND - 1`
+
+# If we have at least one non-option argument,
+# the first is used as count number.
+if [ $# -gt 0 ]; then
+    n=$1
+fi
+
+while [ $(( n -= 1 )) -gt 0 ];
+do
+    printf '\a' 1>&2;
+    sleep 1;
+done;
+printf '\a' 1>&2;

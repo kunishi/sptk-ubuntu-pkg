@@ -1,0 +1,5 @@
+sptk (3.9.0.1-1nmu1ppa1) trusty; urgency=medium
+
+  * packaging for ubuntu ppa, none maintainers update. 
+
+ -- Takeo Kunishima <t.kunishi@gmail.com>  Sat, 03 Sep 2016 06:56:34 +0900

@@ -1,0 +1,94 @@
+#!/bin/sh
+
+check() {
+    TEST_NUM=`expr $TEST_NUM + 1`
+    if [ "$EXPECTED" = "$GOT" ]; then
+	echo "TEST $TEST_NUM: Pass";
+    else
+	echo "TEST $TEST_NUM: Fail";
+    fi
+}
+
+
+echo "Test BELL script"
+TEST_NUM=0;
+
+EXPECTED="d0ef81942a79596af5990216e3d17b4e  -"
+GOT=`debian/scripts/bell 2 2>&1 >/dev/null | md5sum`
+check;
+
+
+echo "Test RAW2WAV script"
+TEST_NUM=0;
+
+mkdir -p tmp
+echo -n "ABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCD" > tmp/file.raw
+cp tmp/file.raw tmp/fi" "le.raw
+
+debian/scripts/raw2wav  tmp/file.raw
+EXPECTED="75ae2419154d298208a618092c0d0fd4  tmp/file.wav"
+GOT=`md5sum tmp/file.wav`
+rm tmp/file.wav
+check
+
+debian/scripts/raw2wav -s 3 tmp/file.raw
+EXPECTED="e64392ccb6c1865205f2ba8416b6fd93  tmp/file.wav"
+GOT=`md5sum tmp/file.wav`
+rm tmp/file.wav
+check
+
+debian/scripts/raw2wav -s 3 -swab tmp/file.raw
+EXPECTED="b46d11f981e1824d11967fe40c3058ff  tmp/file.wav"
+GOT=`md5sum tmp/file.wav`
+rm tmp/file.wav
+check
+
+debian/scripts/raw2wav -s 3 -n tmp/file.raw
+EXPECTED="e64392ccb6c1865205f2ba8416b6fd93  tmp/file.wav"
+GOT=`md5sum tmp/file.wav`
+rm tmp/file.wav
+check
+
+debian/scripts/raw2wav -s 3 -N tmp/file.raw
+EXPECTED="8669269847bd964d8f4c332ec071f63a  tmp/file.wav"
+GOT=`md5sum tmp/file.wav`
+rm tmp/file.wav
+check
+
+debian/scripts/raw2wav -s 3 -N -n tmp/file.raw
+EXPECTED="8669269847bd964d8f4c332ec071f63a  tmp/file.wav"
+GOT=`md5sum tmp/file.wav`
+rm tmp/file.wav
+check
+
+debian/scripts/raw2wav -s 3 -N -n -swab tmp/file.raw
+EXPECTED="5cadc165d971ab157bf7b13bcbec0b7e  tmp/file.wav"
+GOT=`md5sum tmp/file.wav`
+rm tmp/file.wav
+check
+
+debian/scripts/raw2wav -s 3 -N -n -swab +i3 tmp/file.raw
+EXPECTED="9c04a75f09198ffb6a4f6a39bc4dc0bc  tmp/file.wav"
+GOT=`md5sum tmp/file.wav`
+rm tmp/file.wav
+check
+
+debian/scripts/raw2wav -s 3 -N -n -swab +i3 -d tmp/ttt tmp/file.raw
+EXPECTED="9c04a75f09198ffb6a4f6a39bc4dc0bc  tmp/ttt/file.wav"
+GOT=`md5sum tmp/ttt/file.wav`
+rm tmp/ttt/file.wav
+check
+
+debian/scripts/raw2wav -s 3 -N -n -swab +s +s -d tmp/ttt tmp/file.raw
+EXPECTED="5cadc165d971ab157bf7b13bcbec0b7e  tmp/ttt/file.wav"
+GOT=`md5sum tmp/ttt/file.wav`
+rm tmp/ttt/file.wav
+check
+
+debian/scripts/raw2wav -s 3 -N -n -swab +s +s -d tmp/ttt tmp/fi" "le.raw
+EXPECTED="5cadc165d971ab157bf7b13bcbec0b7e  tmp/ttt/fi le.wav"
+GOT=`md5sum tmp/ttt/fi" "le.wav`
+rm tmp/ttt/fi" "le.wav
+check
+
+rm -fr tmp

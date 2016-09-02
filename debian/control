@@ -1,0 +1,18 @@
+Source: sptk
+Section: science
+Priority: optional
+Maintainer: Takeo Kunishima <t.kunishi@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), autotools-dev, tcsh | csh | c-shell
+Standards-Version: 3.9.0
+Homepage: http://sp-tk.sourceforge.net/
+#Vcs-Git: git://git.debian.org/collab-maint/sptk.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/sptk.git;a=summary
+
+Package: sptk
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, tcsh | csh | c-shell
+Description:  suite of speech signal processing tools for UNIX environments
+ The Speech Signal Processing Toolkit (SPTK) is a suite of speech signal
+ processing tools for UNIX environments. It has been being developed by the SPTK
+ working group (see "Who we are" below) and some graduate students in Nagoya
+ Institute of Technology (see "AUTHORS" in the same directory).

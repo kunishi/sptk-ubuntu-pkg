@@ -1,0 +1,313 @@
+#!/bin/sh
+
+cmnd=$0;
+SPTK_PATH=/usr/lib/sptk/bin
+PATH="$SPTK_PATH":"$PATH"
+
+set -e;
+
+usage()
+{
+    cat<<EOF
+
+
+ $cmnd - raw to wav (RIFF)
+
+  usage:
+       $cmnd [ options ] [ infile(s) ]
+  options:
+       -swab         : change endian                [FALSE]
+       -s s          : sampling frequency (kHz)     [16.0]
+       -d d          : destination directory        [N/A]
+       -n            : normalization
+                       with the maximum value
+                       if max >= 32767              [FALSE]
+       -N            : normalization                   '
+                       with the maximum value       [FALSE]
+       +<type1>      : input data type               [s]
+       +<type2>      : output data type              [type1]
+                       c  (char)         C  (unsigned char)
+                       s  (short)        S  (unsigned short)
+                       i3 (int, 3byte)   I3 (unsigned int, 3byte)
+                       i  (int)          I  (unsigned int)
+                       l  (long)         L  (unsigned long)
+                       le (long long)    LE (unsigned long long)
+                       f  (float)        d  (double)
+                       de (long double)
+       -h            : print this message
+  infile(s):
+       waveform                                     [N/A]
+  output:
+       $cmnd attaches RIFF header(s) to input raw file(s).
+
+       The outfile has an extention ".wav", e.g.,
+          sample.m15 ---> sample.m15.wav
+
+       If the infile has an extention ".raw",
+       the extention is removed, e.g.,
+          sample.m15.raw ---> sample.m15.wav
+
+       The outfile is stored in the same directory
+       as the infile.'
+       However, once a destination directory is specified,
+       all wav files are stored in that directory.
+
+ Replacement of the SPTK raw2wav command
+
+EOF
+}
+
+directory=
+flagdirectory=0
+swab=0
+normalization=0
+normalization_all=0
+frequency=16
+type1=s
+type2=$type1
+input=0
+bit=16
+
+
+OPTIND=0
+OPT=""
+for i in "$@"
+do
+    OPTIND=`expr $OPTIND + 1`
+    if [ "$OPT" = "" ]
+    then
+	OPTARG=""
+	OPT="$i"
+	case "$OPT" in
+	    -s|-d|+type1|+type2)
+		continue;
+		;;
+	    -swab|-n|-N|-h|+c|+s|+i3|+i|+l|+le|+C|+S|+I3|+I|+L|+LE|+f|+d|+de)
+		;;
+            *)
+		OPT=""
+		break;
+	esac
+    else
+	OPTARG="$i"
+    fi
+    case "$OPT" in
+	-s)
+	    frequency="$OPTARG"
+	    ;;
+	-d)
+	    directory="$OPTARG"
+	    flagdirectory=1
+	    ;;
+	+type1|+type2)
+	    echo "$OPT" "->" "$OPTARG"
+	    ;;
+	-swab)
+	    swab=1
+	    ;;
+	-n)
+	    normalization=1
+	    ;;
+	-N)
+	    normalization=1
+	    normalization_all=1
+	    ;;
+        -h)
+            usage >&2;
+            exit 0;
+            ;;
+	+c)
+            if [ $input -ne 0 ]; then
+		type2=c
+		bit=8
+            else
+		type1=c
+		input=1
+            fi
+            ;;
+	+s)
+            if [ $input -ne 0 ]; then
+		type2=s
+		bit=16
+            else
+		type1=s
+		input=1
+            fi
+            ;;
+	+i3)
+            if [ $input -ne 0 ]; then
+		type2=i3
+		bit=24
+            else
+		type1=i3
+		input=1
+            fi
+            ;;
+	+i)
+            if [ $input -ne 0 ]; then
+		type2=i
+		bit=32
+            else
+		type1=i
+		input=1
+            fi
+            ;;
+	+l)
+            if [ $input -ne 0 ]; then
+		type2=l
+		bit=32
+            else
+		type1=l
+		input=1
+            fi
+            ;;
+	+le)
+            if [ $input -ne 0 ]; then
+		type2=le
+		bit=64
+            else
+		type1=le
+		input=1
+            fi
+            ;;
+	+C)
+            if [ $input -ne 0 ]; then
+		type2=C
+		bit=8
+            else
+		type1=C
+		input=1
+            fi
+            ;;
+	+S)
+            if [ $input -ne 0 ]; then
+		type2=S
+		bit=16
+            else
+		type1=S
+		input=1
+            fi
+            ;;
+	+I3)
+            if [ $input -ne 0 ]; then
+		type2=I3
+		bit=24
+            else
+		type1=I3
+		input=1
+            fi
+            ;;
+	+I)
+            if [ $input -ne 0 ]; then
+		type2=I
+		bit=32
+            else
+		type1=I
+		input=1
+            fi
+            ;;
+	+L)
+            if [ $input -ne 0 ]; then
+		type2=L
+		bit=32
+            else
+		type1=L
+		input=1
+            fi
+            ;;
+	+LE)
+            if [ $input -ne 0 ]; then
+		type2=LE
+		bit=64
+            else
+		type1=LE
+		input=1
+            fi
+            ;;
+	+f)
+            if [ $input -ne 0 ]; then
+		type2=f
+		bit=32
+            else
+		type1=f
+		input=1
+            fi
+            ;;
+	+d)
+            if [ $input -ne 0 ]; then
+		type2=d
+		bit=64
+            else
+		type1=d
+		input=1
+            fi
+            ;;
+	+de)
+            if [ $input -ne 0 ]; then
+		type2=de
+		bit=96
+            else
+		type1=de
+		input=1
+            fi
+	    ;;
+    esac
+    OPT=""
+done
+if [ "$OPT" != "" ]
+then
+    usage >&2;
+    exit 1;
+fi
+
+if [ $OPTIND -gt 0 ]; then
+    shift $(($OPTIND - 1))
+fi
+
+if [ $frequency -gt 192 ]; then
+    echo "$cmnd : sampling frequency exceeds 192 kHz!" >&2;
+    if [ $frequency -gt 2147483647 ]; then
+	echo "$cmnd : sampling frequency is too large!" >&2;
+	exit 1
+    fi
+fi
+if [ $input -eq 0 ]; then
+    type2=$type1
+fi
+
+TMPFILE=`mktemp -t tmpraw2wav.XXXXXX`
+trap "rm -f '$TMPFILE'.raw '$TMPFILE'" EXIT
+
+for f in "$@"
+do
+    if [ $normalization -ne 0 ]; then
+             if [ $swab -ne 0 ]; then
+		 swab +"$type1" < "$f" | x2x +"$type1"f > "$TMPFILE"
+	     else
+		 x2x +"$type1"f < "$f" > "$TMPFILE"
+	     fi
+	     max=`minmax < "$TMPFILE" | sopr -ABS | minmax | bcut -s 1 | x2x +fa %.100f`
+	     negativemax=`echo "$max < 0" | bc`
+	     if [ $normalization_all -ne 0 ] || [ "$negativemax" -ne 0 ]; then
+		sopr -m 32767 -d "$max" < "$TMPFILE" |\
+		    x2x +f"$type2" > "$TMPFILE".raw
+	     else
+		    x2x +f"$type2" < "$TMPFILE" > "$TMPFILE".raw
+	     fi
+	 else
+             if [ $swab -ne 0 ]; then
+		 swab +"$type1" < "$f" | x2x +"$type1""$type2" > "$TMPFILE".raw
+	     else
+		 x2x +"$type1""$type2" < "$f" > "$TMPFILE".raw
+	     fi
+	 fi
+         outfile=`echo "$f" | sed -e 's/.raw$\|$/.wav/'`
+	 if [ $flagdirectory -ne 0 ]; then
+	     outfile=`basename "$outfile"`
+             outfile="$directory"/"$outfile"
+	 fi
+	 mkdir -p `dirname "$outfile"`
+	 frequency=`echo "$frequency * 1000" | bc`
+	 rawtowav $frequency $bit "$TMPFILE".raw "$TMPFILE"
+	 mv "$TMPFILE" "$outfile"
+done
